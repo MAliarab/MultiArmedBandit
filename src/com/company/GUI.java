@@ -1,11 +1,16 @@
 package com.company;
 
+//created by Mahmoud Aliarab
+// this class is for getting inputs with GUI and show results;
+// you can choose Multi armed algorithms and enter other inputs and see the result in a pretty graph:)
 import org.jfree.ui.RefineryUtilities;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.ListIterator;
 import java.util.Random;
 
 public class GUI {
@@ -16,21 +21,35 @@ public class GUI {
     float epsilon;
     float temp;
     float alpha;
+    float alpha1;
+    float alpha2;
+    float alpha3;
+    float [] alphaList;
+
     String algorithm;
+    String[] algos;
     float[][] allRewards;
     float[][] allOptPercents;
     float [] averagePercent;
     float[] AVG;
+    float[][] AVGList;
+    ArrayList<String> algoList;
 
     public GUI(){
+        //init
+        alphaList = new float[3];
+        algoList= new ArrayList<String>();
+        //-----------------
+
+        // Constructing input GUI
         JFrame frame =  new JFrame();
         frame.setLayout(new GridLayout(7,1));
-//        JPanel mainPanel = new JPanel();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 500);
+        frame.setSize(750, 400);
         frame.setTitle("Multi-Armed-Bandit");
         frame.setLocation(500, 500);
 
+        //panel1 for getting number of arms
         JPanel panel1 = new JPanel();
         panel1.setLayout(new FlowLayout(FlowLayout.LEFT));
         JLabel l1 = new JLabel("N = ");
@@ -39,6 +58,7 @@ public class GUI {
         panel1.add(tf1);
         frame.add(panel1);
 
+        //panel2 for setting real action values manually or with distribution types
         JPanel panel2 = new JPanel();
         panel2.setLayout(new FlowLayout(FlowLayout.LEFT));
         JLabel l2 = new JLabel("Action value: ");
@@ -53,7 +73,7 @@ public class GUI {
         panel2.add(check3);
         frame.add(panel2);
 
-
+        //panel3 for setting num of plays
         JPanel panel3 = new JPanel();
         panel3.setLayout(new FlowLayout(FlowLayout.LEFT));
         JLabel l3 = new JLabel("Plays = ");
@@ -62,6 +82,7 @@ public class GUI {
         panel3.add(tf2);
         frame.add(panel3);
 
+        //panel4 for setting repeat #
         JPanel panel4 = new JPanel();
         panel4.setLayout(new FlowLayout(FlowLayout.LEFT));
         JLabel l4 = new JLabel("Repeats = ");
@@ -70,20 +91,41 @@ public class GUI {
         panel4.add(tf3);
         frame.add(panel4);
 
+        //panel5 is for choosing algorithm(s)
         JPanel panel5 = new JPanel();
         panel5.setLayout(new FlowLayout(FlowLayout.LEFT));
         JLabel l5 = new JLabel("Select Algorithm: ");
-        final String [] algorithms = {"Greedy","Epsilon-Greedy","SoftMax","Linear-Automata(Reward-Inaction)","Linear-Automata(Reward-Penalty)","Reinforcement-comparison"};
-        final JComboBox<String> combo1 = new JComboBox<String>(algorithms);
-        final JLabel l6 = new JLabel("Epsilon: ");
-        final JTextField tf4 = new JTextField(3);
-        tf4.setEnabled(false);
-        panel5.add(l5);
-        panel5.add(combo1);
-        panel5.add(l6);
-        panel5.add(tf4);
-        frame.add(panel5);
+        final JCheckBox greedyBox = new JCheckBox("Greedy");
+        final JCheckBox e_greedyBox = new JCheckBox("E-Greedy");
+        final JCheckBox softMaxBox = new JCheckBox("SoftMax");
+        final JCheckBox r_iBox = new JCheckBox("R-I");
+        final JCheckBox r_pBox = new JCheckBox("R-P");
+        final JCheckBox r_cBox = new JCheckBox("RI_C");
+        final JTextField epsilonField = new JTextField(3);
+        epsilonField.setEnabled(false);
+        final JTextField tempField = new JTextField(3);
+        tempField.setEnabled(false);
+        final JTextField alphaField = new JTextField(3);
+        alphaField.setEnabled(false);
+        final JTextField alpha2Field = new JTextField(3);
+        alpha2Field.setEnabled(false);
+        final JTextField alpha3Field = new JTextField(3);
+        alpha3Field.setEnabled(false);
 
+        panel5.add(l5);
+        panel5.add(greedyBox);
+        panel5.add(e_greedyBox);
+        panel5.add(epsilonField);
+        panel5.add(softMaxBox);
+        panel5.add(tempField);
+        panel5.add(r_iBox);
+        panel5.add(alphaField);
+        panel5.add(r_pBox);
+        panel5.add(alpha2Field);
+        panel5.add(r_cBox);
+        panel5.add(alpha3Field);
+        frame.add(panel5);
+        //panel6 contain button for average reward or optimal action statistics
         JPanel panel6 = new JPanel();
         final JButton submitBtn = new JButton("AverageReward");
         final JButton optBtn = new JButton("OptimalActPercent");
@@ -94,6 +136,55 @@ public class GUI {
         frame.setVisible(true);
 
         //button action listeners
+        e_greedyBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e_greedyBox.isSelected())
+                    epsilonField.setEnabled(true);
+                else
+                    epsilonField.setEnabled(false);
+
+            }
+        });
+        softMaxBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (softMaxBox.isSelected())
+                    tempField.setEnabled(true);
+                else
+                    tempField.setEnabled(false);
+            }
+        });
+        r_iBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (r_iBox.isSelected())
+                    alphaField.setEnabled(true);
+                else
+                    alphaField.setEnabled(false);
+
+            }
+        });
+        r_pBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (r_pBox.isSelected())
+                    alpha2Field.setEnabled(true);
+                else
+                    alpha2Field.setEnabled(false);
+
+            }
+        });
+        r_cBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (r_cBox.isSelected())
+                    alpha3Field.setEnabled(true);
+                else
+                    alpha3Field.setEnabled(false);
+
+            }
+        });
         btn1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -101,10 +192,6 @@ public class GUI {
                     int size = Integer.parseInt(tf1.getText());
                     values = new float[size];
                     manualValue(size, values);
-
-//                for (int i=0;i<values.length;i++){
-//                    System.out.println(values[i]);
-//                }
                 }
             }
         });
@@ -112,13 +199,11 @@ public class GUI {
         check1.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                //TODO call function fo uniform
                 if (!tf1.getText().isEmpty()) {
                     int size = Integer.parseInt(tf1.getText());
                     values = new float[size];
                     uniformValue(values);
                     System.out.println("max value="+max(values));
-
                 }
             }
         });
@@ -148,35 +233,6 @@ public class GUI {
             }
         });
 
-        combo1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (combo1.getSelectedItem().toString().equals("Epsilon-Greedy")){
-                    tf4.setEnabled(true);
-                    l6.setText("Epsilon:");
-
-                }
-                else if (combo1.getSelectedItem().toString().equals("SoftMax")){
-                    tf4.setEnabled(true);
-                    l6.setText("Temp:");
-                }else if (combo1.getSelectedItem().toString().equals("Linear-Automata(Reward-Inaction)")){
-                    tf4.setEnabled(true);
-                    l6.setText("Alpha:");
-                }else if (combo1.getSelectedItem().toString().equals("Linear-Automata(Reward-Penalty)")){
-                    tf4.setEnabled(true);
-                    l6.setText("Alpha:");
-                }else if (combo1.getSelectedItem().toString().equals("Reinforcement-comparison")){
-                    tf4.setEnabled(true);
-                    l6.setText("Alpha:");
-                }
-                else
-                {
-                    tf4.setEnabled(false);
-                    epsilon = 0;
-
-                }
-            }
-        });
 
         submitBtn.addActionListener(new ActionListener() {
 
@@ -186,57 +242,66 @@ public class GUI {
                 N = Integer.parseInt(tf1.getText());
                 plays = Integer.parseInt(tf2.getText());
                 repeats = Integer.parseInt(tf3.getText());
-                algorithm = combo1.getSelectedItem().toString();
-                if (!tf4.getText().isEmpty() && combo1.getSelectedItem().toString().equals("Epsilon-Greedy"))
-                    epsilon = Float.parseFloat(tf4.getText());
-                if (!tf4.getText().isEmpty() && combo1.getSelectedItem().toString().equals("SoftMax"))
-                    temp = Float.parseFloat(tf4.getText());
-                if (!tf4.getText().isEmpty() && combo1.getSelectedItem().toString().equals("Linear-Automata(Reward-Inaction)"))
-                    alpha = Float.parseFloat(tf4.getText());
-                if (!tf4.getText().isEmpty() && combo1.getSelectedItem().toString().equals("Linear-Automata(Reward-Penalty)"))
-                    alpha = Float.parseFloat(tf4.getText());
-                if (!tf4.getText().isEmpty() && combo1.getSelectedItem().toString().equals("Reinforcement-comparison"))
-                    alpha = Float.parseFloat(tf4.getText());
-
-
+//                algorithm = combo1.getSelectedItem().toString();
+                if (greedyBox.isSelected()){
+                    algoList.add("Greedy");
+                }
+                if (!epsilonField.getText().isEmpty() && e_greedyBox.isSelected()){
+                    epsilon = Float.parseFloat(epsilonField.getText());
+                    algoList.add("Epsilon-Greedy");
+                }
+                if (!tempField.getText().isEmpty() && softMaxBox.isSelected()){
+                    temp = Float.parseFloat(tempField.getText());
+                    algoList.add("SoftMax");
+                }
+                if (!alphaField.getText().isEmpty() && r_iBox.isSelected()){
+                    alpha1 = Float.parseFloat(alphaField.getText());
+                    algoList.add("Linear-Automata(Reward-Inaction)");
+                }
+                if (!alpha2Field.getText().isEmpty() && r_pBox.isSelected()){
+                    alpha2 = Float.parseFloat(alpha2Field.getText());
+                    algoList.add("Linear-Automata(Reward-Penalty)");
+                }
+                if (!alpha3Field.getText().isEmpty() && r_cBox.isSelected()){
+                    alpha3 = Float.parseFloat(alpha3Field.getText());
+                    algoList.add("Reinforcement-comparison");
+                }
                 allRewards = new float[plays][repeats];
                 allOptPercents = new float[plays][repeats];
                 averagePercent = new float[plays];
                 AVG = new float[plays];
+                AVGList = new float[algoList.size()][plays];
+                algos = new String[algoList.size()];
+                ListIterator<String> lt = algoList.listIterator();
+                int count = 0;
+                String alg;
+                while (lt.hasNext()) {
+                    alg = lt.next();
+                    for (int i = 0; i < repeats; i++) {
+                        MultiArmed mab = new MultiArmed(N, values, plays,alg, epsilon, temp, alpha1,alpha2,alpha3);
+                        mab.start();
+                        for (int j = 0; j < mab.averageRewards.length; j++) {
+                            allRewards[j][i] = mab.averageRewards[j];
+                        }
+                        for (int k = 0; k < mab.selectedActionPercent.length; k++) {
+                            allOptPercents[k][i] = mab.selectedActionPercent[k];
+                        }
 
-
-//                for (int i=0;i<values.length;i++)
-//                    System.out.println(values[i]);
-//                System.out.println("information:\n N:"+N+"values\n"+values+"plays\n"+plays+algorithm+"\n"+epsilon);
-//                mab.start();
-//                System.out.println("##########this is average rewards:##############");
-//                for (int i=0;i<mab.averageRewards.length;i++){
-//                    System.out.println("["+i+"]"+mab.averageRewards[i]);
-//
-//                }
-//                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-//                for (int i=0;i<N;i++){
-//                    System.out.println(i+"= "+mab.actionCount[i]);
-//                }
-//
-                for (int i=0;i<repeats;i++){
-                    MultiArmed mab = new MultiArmed(N,values,plays,algorithm,epsilon,temp,alpha);
-                    mab.start();
-                    for (int j=0;j<mab.averageRewards.length;j++){
-                        allRewards[j][i] = mab.averageRewards[j];
                     }
-                    for (int k=0;k<mab.selectedActionPercent.length;k++){
-                        allOptPercents[k][i] = mab.selectedActionPercent[k];
+                    for (int i = 0; i < plays; i++) {
+                        AVG[i] = average(allRewards[i]);
+                        averagePercent[i] = average(allOptPercents[i]);
                     }
 
-                }
-                for (int i=0;i<plays;i++){
-                    AVG[i] = average(allRewards[i]);
-                    averagePercent[i]=average(allOptPercents[i]);
+                    for (int i=0;i<plays;i++){
+                        AVGList[count][i] = AVG[i];
+                    }
+                    algos[count] = alg;
+                    count++;
                 }
 
                 XYLineChart_AWT chart = new XYLineChart_AWT("Multi armed bandit learning",
-                        "Average reward of each play ",AVG,algorithm,"Average Reward","Play");
+                        "Average reward of each play ",AVGList,algos,"Average Reward","Play");
                 chart.pack( );
                 RefineryUtilities.centerFrameOnScreen(chart);
                 chart.setVisible( true );
@@ -253,57 +318,67 @@ public class GUI {
                 N = Integer.parseInt(tf1.getText());
                 plays = Integer.parseInt(tf2.getText());
                 repeats = Integer.parseInt(tf3.getText());
-                algorithm = combo1.getSelectedItem().toString();
-                if (!tf4.getText().isEmpty() && combo1.getSelectedItem().toString().equals("Epsilon-Greedy"))
-                    epsilon = Float.parseFloat(tf4.getText());
-                if (!tf4.getText().isEmpty() && combo1.getSelectedItem().toString().equals("SoftMax"))
-                    temp = Float.parseFloat(tf4.getText());
-                if (!tf4.getText().isEmpty() && combo1.getSelectedItem().toString().equals("Linear-Automata(Reward-Inaction)"))
-                    alpha = Float.parseFloat(tf4.getText());
-                if (!tf4.getText().isEmpty() && combo1.getSelectedItem().toString().equals("Linear-Automata(Reward-Penalty)"))
-                    alpha = Float.parseFloat(tf4.getText());
-                if (!tf4.getText().isEmpty() && combo1.getSelectedItem().toString().equals("Reinforcement-comparison"))
-                    alpha = Float.parseFloat(tf4.getText());
-
+//                algorithm = combo1.getSelectedItem().toString();
+                if (greedyBox.isSelected()){
+                    algoList.add("Greedy");
+                }
+                if (!epsilonField.getText().isEmpty() && e_greedyBox.isSelected()){
+                    epsilon = Float.parseFloat(epsilonField.getText());
+                    algoList.add("Epsilon-Greedy");
+                }
+                if (!tempField.getText().isEmpty() && softMaxBox.isSelected()){
+                    temp = Float.parseFloat(tempField.getText());
+                    algoList.add("SoftMax");
+                }
+                if (!alphaField.getText().isEmpty() && r_iBox.isSelected()){
+                    alpha1 = Float.parseFloat(alphaField.getText());
+                    algoList.add("Linear-Automata(Reward-Inaction)");
+                }
+                if (!alpha2Field.getText().isEmpty() && r_pBox.isSelected()){
+                    alpha2 = Float.parseFloat(alpha2Field.getText());
+                    algoList.add("Linear-Automata(Reward-Penalty)");
+                }
+                if (!alpha3Field.getText().isEmpty() && r_cBox.isSelected()){
+                    alpha3 = Float.parseFloat(alpha3Field.getText());
+                    algoList.add("Reinforcement-comparison");
+                }
 
                 allRewards = new float[plays][repeats];
                 allOptPercents = new float[plays][repeats];
                 averagePercent = new float[plays];
                 AVG = new float[plays];
+                AVGList = new float[algoList.size()][plays];
+                algos = new String[algoList.size()];
+                ListIterator<String> lt = algoList.listIterator();
+                int count = 0;
+                String alg;
+                while (lt.hasNext()) {
+                    alg = lt.next();
+                    for (int i = 0; i < repeats; i++) {
+                        MultiArmed mab = new MultiArmed(N, values, plays,alg, epsilon, temp, alpha1,alpha2,alpha3);
+                        mab.start();
+                        for (int j = 0; j < mab.averageRewards.length; j++) {
+                            allRewards[j][i] = mab.averageRewards[j];
+                        }
+                        for (int k = 0; k < mab.selectedActionPercent.length; k++) {
+                            allOptPercents[k][i] = mab.selectedActionPercent[k];
+                        }
 
-
-//                for (int i=0;i<values.length;i++)
-//                    System.out.println(values[i]);
-//                System.out.println("information:\n N:"+N+"values\n"+values+"plays\n"+plays+algorithm+"\n"+epsilon);
-//                mab.start();
-//                System.out.println("##########this is average rewards:##############");
-//                for (int i=0;i<mab.averageRewards.length;i++){
-//                    System.out.println("["+i+"]"+mab.averageRewards[i]);
-//
-//                }
-//                System.out.println("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%");
-//                for (int i=0;i<N;i++){
-//                    System.out.println(i+"= "+mab.actionCount[i]);
-//                }
-//
-                for (int i=0;i<repeats;i++){
-                    MultiArmed mab = new MultiArmed(N,values,plays,algorithm,epsilon,temp,alpha);
-                    mab.start();
-                    for (int j=0;j<mab.averageRewards.length;j++){
-                        allRewards[j][i] = mab.averageRewards[j];
                     }
-                    for (int k=0;k<mab.selectedActionPercent.length;k++){
-                        allOptPercents[k][i] = mab.selectedActionPercent[k];
+                    for (int i = 0; i < plays; i++) {
+                        AVG[i] = average(allRewards[i]);
+                        averagePercent[i] = average(allOptPercents[i]);
                     }
 
-                }
-                for (int i=0;i<plays;i++){
-                    AVG[i] = average(allRewards[i]);
-                    averagePercent[i]=average(allOptPercents[i]);
+                    for (int i=0;i<plays;i++){
+                        AVGList[count][i] = averagePercent[i];
+                    }
+                    algos[count] = alg;
+                    count++;
                 }
 
                 XYLineChart_AWT chart = new XYLineChart_AWT("Multi armed bandit learning",
-                        "Optimal arm selection percentage ",averagePercent,algorithm,"Optimal Percent%","Play");
+                        "Optimal action % of each play ",AVGList,algos,"Optimal action %","Play");
                 chart.pack( );
                 RefineryUtilities.centerFrameOnScreen(chart);
                 chart.setVisible( true );
@@ -323,7 +398,6 @@ public class GUI {
     }
 
     public void manualValue(final int n, final float[] values){
-//        final float[] values = new float[n];
         JPanel[] panels = new JPanel[n];
         JLabel[] labels = new JLabel[n];
         final JTextField[] textFields = new JTextField[n];
@@ -355,7 +429,6 @@ public class GUI {
                 for (int i=0;i<n;i++){
                     if (!textFields[i].getText().isEmpty()) {
                         values[i] = Float.parseFloat(textFields[i].getText());
-//                        System.out.println("this is "+Float.parseFloat(textFields[i].getText()));
                     }
                     else {
                         values[i] = 0;
@@ -367,7 +440,6 @@ public class GUI {
 
             }
         });
-//        return values;
     }
 
     public void uniformValue(float[] values){
@@ -394,7 +466,6 @@ public class GUI {
             int fact = 1;
             for (int j=0;j<i+1;j++)
                 fact *= (j+1);
-            System.out.println("fact = "+fact);
             values[i] = (float)(( Math.exp(-lambda)*Math.pow(lambda,i))/fact);
         }
         print();
@@ -416,8 +487,6 @@ public class GUI {
             if (values[i]>max)
                 max = values[i];
         }
-
         return max;
     }
-
 }

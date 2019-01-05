@@ -1,8 +1,12 @@
 package com.company;
 
+//created by Mahmoud Aliarab
+//this class is for performing algorithms and calculating results
+//at the end return an array contain results of play
 import java.util.Random;
 
 public class MultiArmed {
+    float[] tempArray;
     float[] probList;
     float[] rewardBar;
     int n;
@@ -22,12 +26,11 @@ public class MultiArmed {
     int [] selectedAction;
     float [] selectedActionPercent;
     int maxIndex;
-//    float[] softValues;
 
     public MultiArmed(){
 
     }
-    public MultiArmed(int n,float[] values,int plays,String algorithm,float epsilon,float temp,float alpha){
+    public MultiArmed(int n,float[] values,int plays,String algorithm,float epsilon,float temp,float alpha1,float alpha2,float alpha3){
         this.n=n;
         this.values = values;
         this.plays = plays;
@@ -39,6 +42,7 @@ public class MultiArmed {
         this.actionValues = new float[n];
         this.rewardBar = new float[n];
         this.probList = new float[n];
+        this.tempArray = new float[n];
         this.selectedActionPercent = new float[plays];
 
         for (int i=0;i<n;i++){
@@ -46,10 +50,16 @@ public class MultiArmed {
             this.actionCount[i]=0;
             this.probList[i]=0;
             this.rewardBar[i]=0;
+            this.tempArray[i] = 0.001f;
         }
         this.epsilon = epsilon;
         this.temp = temp;
-        this.alpha = alpha;
+        if (algorithm.equals("Linear-Automata(Reward-Inaction)"))
+            this.alpha = alpha1;
+        if (algorithm.equals("Linear-Automata(Reward-Penalty)"))
+            this.alpha = alpha2;
+        if (algorithm.equals("Reinforcement-comparison"))
+            this.alpha = alpha3;
         this.averageRewards = new float[plays];
         this.selectedAction = new int[plays];
         for (int i=0;i<plays;i++) {
@@ -59,8 +69,6 @@ public class MultiArmed {
         }
         maxVal = max(values);
         maxIndex= argmax(values);
-//        softValues = new float[actionValues.length];
-//        System.out.println("max index="+maxIndex);
     }
 
     public float[] start(){
@@ -92,16 +100,11 @@ public class MultiArmed {
             else if (algorithm.equals("Reinforcement-comparison")){
                 action = RIComparison(alpha);
                 update(i);
-//                System.out.println("this is alpha="+alpha);
             }
 
-
             selectedAction[i]=action;
-//            System.out.println("action: "+action);
         }
         calOptPercent();
-//        for (int k=0;k<selectedActionPercent.length;k++)
-//            System.out.println("percent: "+k+"="+selectedActionPercent[k]);
         return averageRewards;
     }
 
@@ -111,7 +114,6 @@ public class MultiArmed {
             if (selectedAction[i]==maxIndex)
                 optCount++;
             selectedActionPercent[i]=(float)optCount/(float)(i+1);
-//            System.out.println("this is percent"+selectedActionPercent[i]);
         }
     }
 
@@ -150,49 +152,44 @@ public class MultiArmed {
                     sum += (float) Math.exp(actionValues[j]/temp);
             }
             softValues[i] = a/sum;
-//            System.out.println(i+" soft = "+softValues[i]);
         }
         return weightedRand(softValues);
     }
 
     public int reward_Inaction(float alpha){
 
-        int act = weightedRand(actionValues);
-//        System.out.println("selected act="+act);
-        System.out.println("actValPrev:"+act+"="+actionValues[act]);
+
+        int act = weightedRand(tempArray);
         int result = interact(act);
         if (result==1){
-            actionValues[act]=actionValues[act]+alpha*(1-actionValues[act]);
+            tempArray[act]=actionValues[act]+alpha*(1-actionValues[act]);
             for (int i=0;i<actionValues.length;i++){
                 if (i != act)
-                    actionValues[i] = (1-alpha)*actionValues[i];
+                    tempArray[i] = (1-alpha)*actionValues[i];
             }
         }
-        System.out.println("acValAft:"+act+"="+actionValues[act]);
         return act;
     }
 
     public int reward_Penalty(float alpha){
 
-        int act = weightedRand(actionValues);
-//        System.out.println("selected act="+act);
+        int act = weightedRand(tempArray);
         int result = interact(act);
         if (result==1){
-            actionValues[act]=actionValues[act]+alpha*(1-actionValues[act]);
+            tempArray[act]=actionValues[act]+alpha*(1-actionValues[act]);
             for (int i=0;i<actionValues.length;i++){
                 if (i != act)
-                    actionValues[i] = (1-alpha)*actionValues[i];
+                    tempArray[i] = (1-alpha)*actionValues[i];
             }
         }
         else {
-            actionValues[act]=(1-alpha)*actionValues[act];
+            tempArray[act]=(1-alpha)*actionValues[act];
         }
         return act;
     }
 
     public int RIComparison(float alpha){
         int act = weightedRand(actionValues);
-//        System.out.println("act="+act);
         probList[act]=probList[act]+(rewards[act]-rewardBar[act]);
         rewardBar[act]=rewardBar[act]+alpha*(rewards[act]-rewardBar[act]);
         float sum=0;
@@ -202,7 +199,6 @@ public class MultiArmed {
                 sum += (float) Math.exp(probList[j]);
         }
         actionValues[act] = a/sum;
-//        System.out.println("actVal="+actionValues[act]);
         return act;
     }
 
@@ -210,7 +206,6 @@ public class MultiArmed {
         Random r = new Random();
         float probReward = rewards[act];
         float randNum = r.nextFloat()*maxVal;
-//        System.out.println("ranNum="+randNum+" probRew="+probReward);
         if (randNum<=probReward){
             return 1;
         }
@@ -242,7 +237,6 @@ public class MultiArmed {
         }
     }
     public void update(int play){
-//        System.out.println("action:"+action+"play: "+play);
         averageRewards[play] = rewards[action];
 
         actionCount[action]+=1;
@@ -291,5 +285,4 @@ public class MultiArmed {
         }
         return max;
     }
-
 }
